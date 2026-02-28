@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ByteTrivia</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent-dim: #1f6feb;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --green: #3fb950;
+      --red: #f85149;
+      --radius: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 5rem 1.5rem 3rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.65rem 1.6rem;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--accent-dim);
+      color: #fff;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent-dim);
+      margin-left: 0.75rem;
+    }
+
+    .btn-outline:hover { background: rgba(88, 166, 255, 0.1); }
+
+    /* ── Quiz card ── */
+    main {
+      flex: 1;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header h2 { font-size: 1.15rem; }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      background: rgba(88, 166, 255, 0.15);
+      color: var(--accent);
+    }
+
+    .question {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+    }
+
+    .options {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 0.95rem;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      width: 100%;
+    }
+
+    .option:hover:not([disabled]) {
+      border-color: var(--accent-dim);
+      background: rgba(88, 166, 255, 0.07);
+    }
+
+    .option.correct {
+      border-color: var(--green);
+      background: rgba(63, 185, 80, 0.1);
+      color: var(--green);
+    }
+
+    .option.wrong {
+      border-color: var(--red);
+      background: rgba(248, 81, 73, 0.1);
+      color: var(--red);
+    }
+
+    .option-key {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .feedback {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1.1rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback.show { display: block; }
+    .feedback.correct { background: rgba(63, 185, 80, 0.1); border: 1px solid var(--green); color: var(--green); }
+    .feedback.wrong   { background: rgba(248, 81, 73, 0.1);  border: 1px solid var(--red);   color: var(--red); }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+    }
+
+    .score-text { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--accent-dim);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Result card ── */
+    .result {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .result-emoji { font-size: 3rem; margin-bottom: 1rem; }
+    .result h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .result p  { color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Byte<span>Trivia</span></div>
+  <nav>
+    <a href="#quiz">Quiz</a>
+    <a href="https://github.com/bytetrivia" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
+<section class="hero" id="top">
+  <h1>Test your <em>byte-sized</em><br>tech knowledge</h1>
+  <p>A quick daily quiz covering programming, computer science, and everything in between.</p>
+  <a href="#quiz" class="btn btn-primary">Start Quiz</a>
+  <a href="https://github.com/bytetrivia" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
+</section>
+
+<main id="quiz">
+  <!-- progress bar -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="card-header">
+      <h2 id="questionLabel">Question 1 of 5</h2>
+      <span class="badge" id="categoryBadge">Category</span>
+    </div>
+
+    <p class="question" id="questionText"></p>
+
+    <div class="options" id="optionsContainer"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="card-footer">
+      <span class="score-text" id="scoreText">Score: 0</span>
+      <button class="btn btn-primary" id="nextBtn" style="display:none">Next →</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Built with ♥ by <a href="https://github.com/bytetrivia" target="_blank" rel="noopener">ByteTrivia</a> · Open source on GitHub
+</footer>
+
+<script>
+  const QUESTIONS = [
+    {
+      category: "Networking",
+      text: "What does DNS stand for?",
+      options: ["Domain Name System", "Dynamic Network Service", "Distributed Node Server", "Data Navigation System"],
+      answer: 0,
+      explanation: "DNS (Domain Name System) translates human-readable domain names (like example.com) into IP addresses that computers use to communicate."
+    },
+    {
+      category: "Programming",
+      text: "Which data structure operates on a Last-In, First-Out (LIFO) principle?",
+      options: ["Queue", "Stack", "Linked List", "Heap"],
+      answer: 1,
+      explanation: "A Stack is a LIFO structure — the last element pushed onto the stack is the first one popped off. Think of a pile of plates."
+    },
+    {
+      category: "Bits & Bytes",
+      text: "How many bits are in a single byte?",
+      options: ["4", "16", "8", "32"],
+      answer: 2,
+      explanation: "One byte equals 8 bits. This is why a byte can represent 256 distinct values (2⁸ = 256)."
+    },
+    {
+      category: "Git",
+      text: "Which Git command creates a new branch and switches to it immediately?",
+      options: ["git branch new-branch", "git checkout new-branch", "git checkout -b new-branch", "git switch --create new-branch"],
+      answer: 2,
+      explanation: "git checkout -b <name> creates and checks out a new branch in one step. The modern equivalent is git switch -c <name>."
+    },
+    {
+      category: "Security",
+      text: "What does HTTPS enforce that HTTP does not?",
+      options: ["Faster data transfer", "Encrypted communication via TLS/SSL", "Larger file uploads", "Cross-origin resource sharing"],
+      answer: 1,
+      explanation: "HTTPS wraps HTTP inside TLS (formerly SSL), encrypting the data in transit so third parties cannot read or tamper with it."
+    }
+  ];
+
+  const KEYS = ["A", "B", "C", "D"];
+
+  let current = 0;
+  let score = 0;
+  let answered = false;
+
+  function render() {
+    const q = QUESTIONS[current];
+    const total = QUESTIONS.length;
+
+    document.getElementById("questionLabel").textContent = `Question ${current + 1} of ${total}`;
+    document.getElementById("categoryBadge").textContent = q.category;
+    document.getElementById("questionText").textContent = q.text;
+    document.getElementById("progressBar").style.width = `${(current / total) * 100}%`;
+    document.getElementById("scoreText").textContent = `Score: ${score}`;
+    document.getElementById("nextBtn").style.display = "none";
+
+    const feedback = document.getElementById("feedback");
+    feedback.className = "feedback";
+    feedback.textContent = "";
+
+    const container = document.getElementById("optionsContainer");
+    container.innerHTML = "";
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.innerHTML = `<span class="option-key">${KEYS[i]}</span>${opt}`;
+      btn.addEventListener("click", () => selectOption(i));
+      container.appendChild(btn);
+    });
+
+    answered = false;
+  }
+
+  function selectOption(idx) {
+    if (answered) return;
+    answered = true;
+
+    const q = QUESTIONS[current];
+    const buttons = document.querySelectorAll(".option");
+
+    buttons.forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.answer) btn.classList.add("correct");
+      else if (i === idx) btn.classList.add("wrong");
+    });
+
+    const feedback = document.getElementById("feedback");
+    const isCorrect = idx === q.answer;
+
+    if (isCorrect) {
+      score++;
+      document.getElementById("scoreText").textContent = `Score: ${score}`;
+      feedback.className = "feedback correct show";
+      feedback.textContent = "✓ Correct! " + q.explanation;
+    } else {
+      feedback.className = "feedback wrong show";
+      feedback.textContent = "✗ Not quite. " + q.explanation;
+    }
+
+    const nextBtn = document.getElementById("nextBtn");
+    nextBtn.style.display = "inline-block";
+    nextBtn.textContent = current < QUESTIONS.length - 1 ? "Next →" : "See Results";
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current < QUESTIONS.length) {
+      render();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    const total = QUESTIONS.length;
+    const pct = Math.round((score / total) * 100);
+    const emoji = pct === 100 ? "🏆" : pct >= 60 ? "🎉" : "📚";
+    const msg   = pct === 100
+      ? "Perfect score! You're a true ByteTrivia champion."
+      : pct >= 60
+      ? `Great job! You got ${score} out of ${total} correct.`
+      : `Keep practicing! You got ${score} out of ${total} correct.`;
+
+    document.getElementById("progressBar").style.width = "100%";
+    document.getElementById("quizCard").innerHTML = `
+      <div class="result">
+        <div class="result-emoji">${emoji}</div>
+        <h2>${pct}%</h2>
+        <p>${msg}</p>
+        <button class="btn btn-primary" id="restartBtn">Play Again</button>
+      </div>
+    `;
+    document.getElementById("restartBtn").addEventListener("click", restart);
+  }
+
+  function restart() {
+    current = 0;
+    score = 0;
+
+    document.getElementById("quizCard").innerHTML = `
+      <div class="card-header">
+        <h2 id="questionLabel"></h2>
+        <span class="badge" id="categoryBadge"></span>
+      </div>
+      <p class="question" id="questionText"></p>
+      <div class="options" id="optionsContainer"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="card-footer">
+        <span class="score-text" id="scoreText">Score: 0</span>
+        <button class="btn btn-primary" id="nextBtn" style="display:none">Next →</button>
+      </div>
+    `;
+    document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+    render();
+  }
+
+  render();
+  document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+</script>
+</body>
+</html>
